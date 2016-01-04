@@ -44,9 +44,8 @@ var Madrasa = React.createClass({
         var initialRoute = {name: 'main'};
         return (
               <Navigator
-                  style={styles.container}
+                  style={styles.navigator}
                   initialRoute={initialRoute}
-                  configureScene={() => Navigator.SceneConfigs.FadeAndroid}
                   renderScene={renderScene}
                 />
         );
@@ -54,6 +53,10 @@ var Madrasa = React.createClass({
 });
 
 var styles = StyleSheet.create({
+    navigator: {
+        flex: 1,
+        backgroundColor: '#F5FCFF'
+    },
     container: {
         flex: 1,
         justifyContent: 'center',

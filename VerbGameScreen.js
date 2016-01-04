@@ -11,7 +11,7 @@ var {
 var VerbGameScreen = React.createClass({
   render: function() {
     return (
-        <View style={styles.main}>
+        <View style={styles.container}>
             <Text>Verbs! Verbing? Has been being verbed.</Text>
         </View>
     );
@@ -19,8 +19,11 @@ var VerbGameScreen = React.createClass({
 });
 
 var styles = StyleSheet.create({
-  main: {
+  container: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
   },
 });
 

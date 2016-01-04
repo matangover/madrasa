@@ -1,53 +1,53 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * Madrase - learn spoken Arabic
  */
 'use strict';
 
 var React = require('react-native');
 var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
+    AppRegistry,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableHighlight,
+    View
 } = React;
 
 var Madrase = React.createClass({
-  render: function() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          Press Cmd+R to reload,{'\n'}
-          Cmd+D or shake for dev menu
-        </Text>
-      </View>
-    );
-  }
+    render: function() {
+        return (
+            <View style={styles.container}>
+                <Image source={require('./images/header.png')} style={styles.header}/>
+                <TouchableHighlight style={styles.button} onPress={() => console.log('clicked lessons')}>
+                    <Image source={require('./images/button1.png')} style={styles.buttonImage}/>
+                </TouchableHighlight>
+                <TouchableHighlight onPress={() => console.log('clicked 2')} style={styles.button}>
+                    <Image source={require('./images/button2.png')} style={styles.buttonImage}/>
+                </TouchableHighlight>
+            </View>
+        );
+    }
 });
 
 var styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F5FCFF'
+    },
+    header: {
+        width: 147,
+        height: 100,
+        marginBottom: 20
+    },
+    button: {
+        marginTop: 10
+    },
+    buttonImage: {
+        width: 142,
+        height: 50
+    }
 });
 
 AppRegistry.registerComponent('Madrase', () => Madrase);

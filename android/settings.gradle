@@ -1,0 +1,3 @@
+rootProject.name = 'Madrase'
+
+include ':app'

@@ -1,5 +1,5 @@
 /**
- * Madrase - learn spoken Arabic
+ * Madrasa - learn spoken Arabic
  */
 'use strict';
 
@@ -13,7 +13,7 @@ var {
     View
 } = React;
 
-var Madrase = React.createClass({
+var Madrasa = React.createClass({
     render: function() {
         return (
             <View style={styles.container}>
@@ -50,4 +50,4 @@ var styles = StyleSheet.create({
     }
 });
 
-AppRegistry.registerComponent('Madrase', () => Madrase);
+AppRegistry.registerComponent('Madrasa', () => Madrasa);

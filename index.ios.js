@@ -7,24 +7,48 @@ var React = require('react-native');
 var {
     AppRegistry,
     Image,
+    Navigator,
     StyleSheet,
     Text,
     TouchableHighlight,
     View
 } = React;
 
-var Madrasa = React.createClass({
-    render: function() {
+var VerbGameScreen = require('./VerbGameScreen');
+
+var renderScene = function(route, navigator) {
+    if (route.name === 'main') {
         return (
             <View style={styles.container}>
                 <Image source={require('./images/header.png')} style={styles.header}/>
                 <TouchableHighlight style={styles.button} onPress={() => console.log('clicked lessons')}>
                     <Image source={require('./images/button1.png')} style={styles.buttonImage}/>
                 </TouchableHighlight>
-                <TouchableHighlight onPress={() => console.log('clicked 2')} style={styles.button}>
+                <TouchableHighlight
+                    onPress={() => navigator.push({name: 'verb_game'})}
+                    style={styles.button}>
                     <Image source={require('./images/button2.png')} style={styles.buttonImage}/>
                 </TouchableHighlight>
             </View>
+        );
+    } else if (route.name === 'verb_game') {
+        return (
+            <VerbGameScreen navigator={navigator} />
+        );
+    }
+};
+
+
+var Madrasa = React.createClass({
+    render: function() {
+        var initialRoute = {name: 'main'};
+        return (
+              <Navigator
+                  style={styles.container}
+                  initialRoute={initialRoute}
+                  configureScene={() => Navigator.SceneConfigs.FadeAndroid}
+                  renderScene={renderScene}
+                />
         );
     }
 });

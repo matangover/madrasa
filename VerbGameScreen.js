@@ -18,11 +18,11 @@ var CIRCLE_HIGHLIGHT_COLOR = 'green';
 var VerbGameScreen = React.createClass({
 
     _panResponder: {},
-_previousLeft: 0,
-_previousTop: 0,
-_circleStyles: {},
-circle: (null : ?{ setNativeProps(props: Object): void }),
-_hightlightedCircle: null,
+    _previousLeft: 0,
+    _previousTop: 0,
+    _circleStyles: {},
+    circle: (null : ?{ setNativeProps(props: Object): void }),
+    _hightlightedCircle: null,
 
     componentWillMount: function() {
       this._panResponder = PanResponder.create({

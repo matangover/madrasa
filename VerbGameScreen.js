@@ -24,6 +24,12 @@ var VerbGameScreen = React.createClass({
     circle: (null : ?{ setNativeProps(props: Object): void }),
     _hightlightedCircle: null,
 
+    getInitialState: function() {
+        return {
+            showSubmenu: false
+        };
+    },
+
     componentWillMount: function() {
       this._panResponder = PanResponder.create({
         onStartShouldSetPanResponder: (evt, gestureState) => true,
@@ -61,6 +67,11 @@ var VerbGameScreen = React.createClass({
         //         </TouchableHighlight>
         //     </View>
         // );
+
+        var submenu = this.state.showSubmenu ?
+            <View style={[{left:100, top:300}, styles.genericCircle]} /> :
+                null;
+
         return (
             <View style={styles.container}>
                 <View
@@ -80,6 +91,7 @@ var VerbGameScreen = React.createClass({
                     ref={(circle) => {this.circle3 = circle;}}
                     style={[{left: 300, top: 300}, styles.genericCircle]}
                 />
+            {submenu}
             </View>
         );
 
@@ -145,6 +157,8 @@ var VerbGameScreen = React.createClass({
             });
         }
         this._hightlightedCircle = overlappingCircle ? overlappingCircle.ref : null;
+
+        this.setState({showSubmenu: overlappingCircle != null});
     },
 
     _hitTest: function(circle1, circle2) {

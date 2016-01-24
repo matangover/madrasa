@@ -18,19 +18,19 @@ var VerbGameScreen = React.createClass({
         return (
             <DragAndDropMenu>
                 <DragAndDropSubmenu title="עבר" style={{top:100, left: 100}}>
-                    <DragAndDropMenuItem />
-                    <DragAndDropMenuItem />
-                    <DragAndDropMenuItem />
+                    <DragAndDropMenuItem style={{top:0, left: 0}}/>
+                    <DragAndDropMenuItem style={{top:100, left: 0}}/>
+                    <DragAndDropMenuItem style={{top:200, left: 0}}/>
                 </DragAndDropSubmenu>
                 <DragAndDropSubmenu title="ציווי" style={{top:200, left: 200}}>
-                    <DragAndDropMenuItem />
-                    <DragAndDropMenuItem />
-                    <DragAndDropMenuItem />
+                    <DragAndDropMenuItem style={{top:0, left: 0}}/>
+                    <DragAndDropMenuItem style={{top:0, left: 100}}/>
+                    <DragAndDropMenuItem style={{top:0, left: 200}}/>
                 </DragAndDropSubmenu>
                 <DragAndDropSubmenu title="הווה/עתיד" style={{top:300, left: 300}}>
-                    <DragAndDropMenuItem />
-                    <DragAndDropMenuItem />
-                    <DragAndDropMenuItem />
+                    <DragAndDropMenuItem style={{top:400, left: 0}}/>
+                    <DragAndDropMenuItem style={{top:400, left: 100}}/>
+                    <DragAndDropMenuItem style={{top:400, left: 200}}/>
                 </DragAndDropSubmenu>
             </DragAndDropMenu>
         )
@@ -201,19 +201,18 @@ var DragAndDropSubmenu = React.createClass({
 });
 
 var DragAndDropMenuItem = React.createClass({
-    getInitialState: function() {
-        return {
-            active: false
-        };
-    },
-
     render: function() {
         return (
-            <View {...this.props} style={styles.menuItem} onLayout={this._onLayout}/>
+            <View {...this.props}
+                style={[
+                    styles.menuItem,
+                    this.props.style,
+                    this.props.active && styles.activeMenuItem]}
+                onLayout={this._onLayout}/>
         );
     },
 
-    onLayout: function(position) {
+    _onLayout: function(position) {
         this.props.layoutChanged(position.nativeEvent.layout);
     }
 });
@@ -251,6 +250,9 @@ var styles = StyleSheet.create({
         borderRadius: CIRCLE_SIZE / 2,
         backgroundColor: 'black',
         position: 'absolute'
+    },
+    activeMenuItem: {
+        backgroundColor: 'pink',
     },
 });
 

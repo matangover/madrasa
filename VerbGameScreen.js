@@ -43,6 +43,7 @@ var DragAndDropMenu = React.createClass({
     getInitialState: function() {
         return {
             activeSubmenu: null,
+            activeMenuItem: null,
             dragging: false,
             pan: new Animated.ValueXY()
         };
@@ -64,9 +65,33 @@ var DragAndDropMenu = React.createClass({
       });
 
       this._childLayouts = [];
+      this._itemLayouts = [];
     },
 
     render: function() {
+        var children = null;
+        if (this.state.activeSubmenu != null) {
+            var submenu = this.props.children[this.state.activeSubmenu];
+            children = React.cloneElement(
+                submenu,
+                {
+                    active: true,
+                    menuItemLayoutChanged: this._saveItemLayout,
+                    activeItem: this.state.activeMenuItem
+                });
+        } else {
+            children = React.Children.map(
+                this.props.children,
+                function (child, i) {
+                    return React.cloneElement(
+                        child,
+                        {
+                            layoutChanged: this._saveChildLayout.bind(this, i),
+                            active: false
+                        });
+                },
+                this);
+        }
         return (
             <View style={styles.container}>
                 <Animated.View
@@ -78,19 +103,7 @@ var DragAndDropMenu = React.createClass({
                     onLayout={this._onLayout}
                 />
 
-                {
-                    React.Children.map(
-                        this.props.children,
-                        function (child, i) {
-                            return React.cloneElement(
-                                child,
-                                {
-                                    layoutChanged: this._saveChildLayout.bind(this, i),
-                                    active: i == this.state.activeSubmenu
-                                });
-                        },
-                        this)
-                }
+                {children}
             </View>
         );
     },
@@ -101,6 +114,10 @@ var DragAndDropMenu = React.createClass({
 
     _saveChildLayout: function(childIndex, layout) {
         this._childLayouts[childIndex] = layout;
+    },
+
+    _saveItemLayout: function(itemIndex, layout) {
+        this._itemLayouts[itemIndex] = layout;
     },
 
     _handlePanResponderGrant: function() {
@@ -114,14 +131,25 @@ var DragAndDropMenu = React.createClass({
     },
 
     _handlePanResponderEnd: function(e: Object, gestureState: Object) {
-        this.setState({dragging: false});
+        this.setState({dragging: false, activeSubmenu: null, activeMenuItem: null});
         this.state.pan.setValue({x: 0, y: 0});
-        this._highlightOverlappingCircle();
+        //this._highlightOverlappingCircle();
     },
 
     _highlightOverlappingCircle: function() {
-        var overlappingCircleIndex = this._childLayouts.findIndex(submenu => this._hitTest(submenu));
-        this.setState({activeSubmenu: overlappingCircleIndex});
+        if (this.state.activeSubmenu != null) {
+            var hoveredItem = this._itemLayouts.findIndex(item => this._hitTest(item));
+            if (hoveredItem == -1) {
+                hoveredItem = null;
+            }
+            this.setState({activeMenuItem: hoveredItem});
+        } else {
+            var hoveredSubmenu = this._childLayouts.findIndex(submenu => this._hitTest(submenu));
+            if (hoveredSubmenu == -1) {
+                hoveredSubmenu = null;
+            }
+            this.setState({activeSubmenu: hoveredSubmenu});
+        }
     },
 
     _hitTest: function(submenu) {
@@ -144,7 +172,16 @@ var DragAndDropMenu = React.createClass({
 
 var DragAndDropSubmenu = React.createClass({
     render: function() {
-        var children = this.props.active ? this.props.children : null;
+        if (this.props.active) {
+            var children = React.Children.map(this.props.children, (child, i) => {
+                return React.cloneElement(child, {
+                    active: i == this.props.activeItem,
+                    layoutChanged: this.props.menuItemLayoutChanged.bind(null, i)
+                });
+            });
+        } else {
+            var children = null;
+        }
         return (
             <View>
                 <View
@@ -159,7 +196,7 @@ var DragAndDropSubmenu = React.createClass({
     },
 
     onLayout: function(position) {
-        this.props.layoutChanged(position.nativeEvent.layout);
+        this.props.layoutChanged && this.props.layoutChanged(position.nativeEvent.layout);
     }
 });
 
@@ -172,9 +209,13 @@ var DragAndDropMenuItem = React.createClass({
 
     render: function() {
         return (
-            <View {...this.props} style={styles.menuItem}/>
+            <View {...this.props} style={styles.menuItem} onLayout={this._onLayout}/>
         );
     },
+
+    onLayout: function(position) {
+        this.props.layoutChanged(position.nativeEvent.layout);
+    }
 });
 
 var styles = StyleSheet.create({

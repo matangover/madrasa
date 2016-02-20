@@ -60,8 +60,6 @@ var VerbGameScreen = React.createClass({
                     <View style={{flex: 2, justifyContent: 'center', alignItems: 'center'}}>
                         <Animated.View
                             style={[
-                                //styles.circle,
-                                //this.props.style,
                                 this.state.dragging && styles.draggingCircle,
                                 {transform: this.state.pan.getTranslateTransform()}]}
                             {...this._panResponder.panHandlers}>
@@ -157,7 +155,6 @@ var VerbGameScreen = React.createClass({
             console.log("Layout already saved:", path);
             return;
         }
-        //this._itemLayouts[path] = position.nativeEvent.layout;
         this._refs[path].measure((x, y, width, height, pageX, pageY) => { this._itemLayouts[path] = {x, y, width, height, pageX, pageY}; });
     },
 
@@ -222,15 +219,10 @@ var VerbGameScreen = React.createClass({
     _hitTest: function(path) {
         var layout = this._itemLayouts[path];
         if (!layout) {
-            // Not loaded yet.
             console.log("Not loaded:", path);
             return false;
         }
 
-        // var mainItemPosition = {
-        //     x: this._currentPan.x + this._layout.pageX,
-        //     y: this._currentPan.y + this._layout.pageY,
-        // };
         var mainLayout = this._itemLayouts["draggable"];
         if (!mainLayout) {
             console.log("No main item position");
@@ -259,163 +251,6 @@ var VerbGameScreen = React.createClass({
         return horizontalOverlapping && verticalOverlapping;
     },
 
-});
-
-
-var DragAndDropMenu = React.createClass({
-    render: function() {
-        var children = null;
-        if (this.state.activeSubmenu != null) {
-            var submenu = this.props.children[this.state.activeSubmenu];
-            children = React.cloneElement(
-                submenu,
-                {
-                    active: true,
-                    menuItemLayoutChanged: this._saveItemLayout,
-                    activeItem: this.state.activeMenuItem
-                });
-        } else {
-            children = React.Children.map(
-                this.props.children,
-                function (child, i) {
-                    return React.cloneElement(
-                        child,
-                        {
-                            layoutChanged: this._saveChildLayout.bind(this, i),
-                            active: false
-                        });
-                },
-                this);
-        }
-        return (
-            <View style={this.props.containerStyle}>
-                {children}
-
-                <Animated.View
-                    style={[
-                        styles.circle,
-                        this.props.style,
-                        this.state.dragging && styles.draggingCircle,
-                        {transform: this.state.pan.getTranslateTransform()}]}
-                    {...this._panResponder.panHandlers}
-                    onLayout={this._onLayout}>
-                    <Text>{this.props.title}</Text>
-                </Animated.View>
-            </View>
-        );
-    },
-
-    _onLayout: function(position) {
-        this._layout = position.nativeEvent.layout;
-    },
-
-    _saveChildLayout: function(childIndex, layout) {
-        this._childLayouts[childIndex] = layout;
-    },
-
-    _saveItemLayout: function(itemIndex, layout) {
-        this._itemLayouts[itemIndex] = layout;
-    },
-
-    _handlePanResponderGrant: function() {
-        //this.state.pan.setOffset(this._currentPan);
-        this.setState({dragging: true});
-    },
-
-    _handlePanResponderMove: function(e: Object, gestureState: Object) {
-        this.state.pan.setValue({x: gestureState.dx, y: gestureState.dy});
-        this._highlightOverlappingCircle();
-    },
-
-    _handlePanResponderEnd: function(e: Object, gestureState: Object) {
-        this.setState({dragging: false, activeSubmenu: null, activeMenuItem: null});
-        this.state.pan.setValue({x: 0, y: 0});
-        //this._highlightOverlappingCircle();
-    },
-
-    _highlightOverlappingCircle: function() {
-        if (this.state.activeSubmenu != null) {
-            var hoveredItem = this._itemLayouts.findIndex(item => this._hitTest(item));
-            if (hoveredItem == -1) {
-                hoveredItem = null;
-            }
-            this.setState({activeMenuItem: hoveredItem});
-        } else {
-            var hoveredSubmenu = this._childLayouts.findIndex(submenu => this._hitTest(submenu));
-            if (hoveredSubmenu == -1) {
-                hoveredSubmenu = null;
-            }
-            this.setState({activeSubmenu: hoveredSubmenu});
-        }
-    },
-
-    _hitTest: function(submenu) {
-        var circle1Center = {
-            x: this._currentPan.x + this._layout.x + this._layout.width / 2,
-            y: this._currentPan.y + this._layout.y + this._layout.height / 2
-        };
-        var circle2Center = {
-            x: submenu.x + submenu.width / 2,
-            y: submenu.y + submenu.height / 2
-        };
-        var distanceBetweenCenters = Math.sqrt(
-            Math.pow(circle1Center.x - circle2Center.x, 2) +
-            Math.pow(circle1Center.y - circle2Center.y, 2));
-        var circle1Radius = this._layout.width / 2;
-        var circle2Radius = submenu.width / 2;
-        return distanceBetweenCenters < circle1Radius + circle2Radius;
-    },
-});
-
-var DragAndDropSubmenu = React.createClass({
-    render: function() {
-        if (this.props.active) {
-            var children = React.Children.map(this.props.children, (child, i) => {
-                return React.cloneElement(child, {
-                    active: i == this.props.activeItem,
-                    layoutChanged: this.props.menuItemLayoutChanged.bind(null, i)
-                });
-            });
-        } else {
-            var children = null;
-        }
-        return (
-            <View style={this.props.containerStyle}>
-                <View
-                    style={[
-                        styles.submenu,
-                        this.props.style,
-                        this.props.active && styles.activeSubmenu]}
-                    onLayout={this.onLayout}>
-                    <Text>{this.props.title}</Text>
-                </View>
-                {children}
-            </View>
-        );
-    },
-
-    onLayout: function(position) {
-        this.props.layoutChanged && this.props.layoutChanged(position.nativeEvent.layout);
-    }
-});
-
-var DragAndDropMenuItem = React.createClass({
-    render: function() {
-        return (
-            <View {...this.props}
-                style={[
-                    styles.menuItem,
-                    this.props.style,
-                    this.props.active && styles.activeMenuItem]}
-                onLayout={this._onLayout}>
-                <Text>{this.props.title}</Text>
-            </View>
-        );
-    },
-
-    _onLayout: function(position) {
-        this.props.layoutChanged(position.nativeEvent.layout);
-    }
 });
 
 var styles = StyleSheet.create({
@@ -475,17 +310,6 @@ var styles = StyleSheet.create({
 });
 
 module.exports = VerbGameScreen;
-
-
-// "past", "עבר", [
-//     "1", "1" [
-//         "אני/אתה",
-//         "אנחנו"
-//     ],
-//     "2", "2", [
-//
-//     ]
-// ]
 
 var menuItems = {
     "children": {

@@ -15,24 +15,97 @@ var CIRCLE_SIZE = 80;
 
 var VerbGameScreen = React.createClass({
     render: function() {
+        var menuItems = [
+            {
+                title: "עבר",
+                children: [
+                    {
+                        title: "1",
+                        children: [
+                            {title: "אני (/אתה)"},
+                            {title: "אנחנו"}
+                        ]
+                    },
+                    {
+                        title: "2",
+                        children: [
+                            {title: "אתה (או אני)"},
+                            {title: "את"},
+                            {title: "אתם/אתן"}
+                        ]
+                    },
+                    {
+                        title: "3",
+                        children: [
+                            {title: "הוא"},
+                            {title: "היא"},
+                            {title: "הם/הן"}
+                        ]
+                    },
+                ]
+            },
+            {
+                title: "הווה/עתיד",
+                children: [
+                    {
+                        title: "1",
+                        children: [
+                            {title: "אני"},
+                            {title: "אנחנו"}
+                        ]
+                    },
+                    {
+                        title: "2",
+                        children: [
+                            {title: "אתה (או היא)"},
+                            {title: "את"},
+                            {title: "אתם/אתן"}
+                        ]
+                    },
+                    {
+                        title: "3",
+                        children: [
+                            {title: "הוא"},
+                            {title: "היא (או אתה)"},
+                            {title: "הם/הן"}
+                        ]
+                    },
+                ]
+            },
+            {
+                title: "ציווי",
+                children: [
+                    {title: "אתה"},
+                    {title: "את"},
+                    {title: "אתם/אתן"}
+                ]
+            }
+        ];
+
         return (
-            <DragAndDropMenu>
-                <DragAndDropSubmenu title="עבר" style={{top:100, left: 100}}>
-                    <DragAndDropMenuItem style={{top:0, left: 0}}/>
-                    <DragAndDropMenuItem style={{top:100, left: 0}}/>
-                    <DragAndDropMenuItem style={{top:200, left: 0}}/>
-                </DragAndDropSubmenu>
-                <DragAndDropSubmenu title="ציווי" style={{top:200, left: 200}}>
-                    <DragAndDropMenuItem style={{top:0, left: 0}}/>
-                    <DragAndDropMenuItem style={{top:0, left: 100}}/>
-                    <DragAndDropMenuItem style={{top:0, left: 200}}/>
-                </DragAndDropSubmenu>
-                <DragAndDropSubmenu title="הווה/עתיד" style={{top:300, left: 300}}>
-                    <DragAndDropMenuItem style={{top:400, left: 0}}/>
-                    <DragAndDropMenuItem style={{top:400, left: 100}}/>
-                    <DragAndDropMenuItem style={{top:400, left: 200}}/>
-                </DragAndDropSubmenu>
-            </DragAndDropMenu>
+            <View style={{flex: 1, justifyContent:'center', borderWidth: 10, borderColor: 'blue'}}>
+                {/*<View style={{flex: 1 }} />*/}
+                {/*<View style={{flex: 1, borderWidth: 10, borderColor: 'red'}}>*/}
+                    <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'pink'}}>
+                        <View style={{flex: 1}} />
+                        <View style={{flex: 2, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <Text>הווה/עתיד</Text>
+                            <Text>עבר</Text>
+                        </View>
+                        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text>ציווי</Text>
+                        </View>
+                    </View>
+                    <View style={{flex: 1}}>
+                        <View style={{flex: 1 }} />
+                        <View style={{flex: 2, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text>פועל</Text>
+                        </View>
+                        <View style={{flex: 1 }} />
+                    </View>
+                </View>
+                {/*<View style={{flex: 1 }} />*/}
+            </View>
         )
     },
 });
@@ -93,17 +166,19 @@ var DragAndDropMenu = React.createClass({
                 this);
         }
         return (
-            <View style={styles.container}>
+            <View style={this.props.containerStyle}>
+                {children}
+
                 <Animated.View
                     style={[
                         styles.circle,
+                        this.props.style,
                         this.state.dragging && styles.draggingCircle,
                         {transform: this.state.pan.getTranslateTransform()}]}
                     {...this._panResponder.panHandlers}
-                    onLayout={this._onLayout}
-                />
-
-                {children}
+                    onLayout={this._onLayout}>
+                    <Text>{this.props.title}</Text>
+                </Animated.View>
             </View>
         );
     },
@@ -183,13 +258,15 @@ var DragAndDropSubmenu = React.createClass({
             var children = null;
         }
         return (
-            <View>
+            <View style={this.props.containerStyle}>
                 <View
                     style={[
                         styles.submenu,
                         this.props.style,
                         this.props.active && styles.activeSubmenu]}
-                    onLayout={this.onLayout} />
+                    onLayout={this.onLayout}>
+                    <Text>{this.props.title}</Text>
+                </View>
                 {children}
             </View>
         );
@@ -208,7 +285,9 @@ var DragAndDropMenuItem = React.createClass({
                     styles.menuItem,
                     this.props.style,
                     this.props.active && styles.activeMenuItem]}
-                onLayout={this._onLayout}/>
+                onLayout={this._onLayout}>
+                <Text>{this.props.title}</Text>
+            </View>
         );
     },
 
@@ -219,17 +298,21 @@ var DragAndDropMenuItem = React.createClass({
 
 var styles = StyleSheet.create({
     container: {
+        borderColor: 'green',
+        borderWidth: 10,
         flex: 1,
-        backgroundColor: '#f5fcff'
+        backgroundColor: '#f5fcff',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     circle: {
         width: CIRCLE_SIZE,
         height: CIRCLE_SIZE,
         borderRadius: CIRCLE_SIZE / 2,
         backgroundColor: 'blue',
-        position: 'absolute',
-        left: 0,
-        top: 0,
+        //position: 'absolute',
+        //left: 0,
+        //top: 0,
     },
     draggingCircle: {
         backgroundColor: 'red'
@@ -238,7 +321,7 @@ var styles = StyleSheet.create({
         width: CIRCLE_SIZE,
         height: CIRCLE_SIZE,
         borderRadius: CIRCLE_SIZE / 2,
-        backgroundColor: 'black',
+        backgroundColor: 'gray',
         position: 'absolute'
     },
     activeSubmenu: {
@@ -253,6 +336,19 @@ var styles = StyleSheet.create({
     },
     activeMenuItem: {
         backgroundColor: 'pink',
+    },
+    submenuContainer: {
+        borderColor: 'red',
+        borderWidth: 10,
+        //flex: 1,
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+        position: 'absolute',
+        backgroundColor: 'transparent',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 

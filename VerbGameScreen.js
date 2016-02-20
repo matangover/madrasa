@@ -14,109 +14,11 @@ var {
 var CIRCLE_SIZE = 80;
 
 var VerbGameScreen = React.createClass({
-    render: function() {
-        var menuItems = [
-            {
-                title: "עבר",
-                children: [
-                    {
-                        title: "1",
-                        children: [
-                            {title: "אני (/אתה)"},
-                            {title: "אנחנו"}
-                        ]
-                    },
-                    {
-                        title: "2",
-                        children: [
-                            {title: "אתה (או אני)"},
-                            {title: "את"},
-                            {title: "אתם/אתן"}
-                        ]
-                    },
-                    {
-                        title: "3",
-                        children: [
-                            {title: "הוא"},
-                            {title: "היא"},
-                            {title: "הם/הן"}
-                        ]
-                    },
-                ]
-            },
-            {
-                title: "הווה/עתיד",
-                children: [
-                    {
-                        title: "1",
-                        children: [
-                            {title: "אני"},
-                            {title: "אנחנו"}
-                        ]
-                    },
-                    {
-                        title: "2",
-                        children: [
-                            {title: "אתה (או היא)"},
-                            {title: "את"},
-                            {title: "אתם/אתן"}
-                        ]
-                    },
-                    {
-                        title: "3",
-                        children: [
-                            {title: "הוא"},
-                            {title: "היא (או אתה)"},
-                            {title: "הם/הן"}
-                        ]
-                    },
-                ]
-            },
-            {
-                title: "ציווי",
-                children: [
-                    {title: "אתה"},
-                    {title: "את"},
-                    {title: "אתם/אתן"}
-                ]
-            }
-        ];
-
-        return (
-            <View style={{flex: 1, justifyContent:'center', borderWidth: 10, borderColor: 'blue'}}>
-                {/*<View style={{flex: 1 }} />*/}
-                {/*<View style={{flex: 1, borderWidth: 10, borderColor: 'red'}}>*/}
-                    <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'pink'}}>
-                        <View style={{flex: 1}} />
-                        <View style={{flex: 2, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                            <Text>הווה/עתיד</Text>
-                            <Text>עבר</Text>
-                        </View>
-                        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                            <Text>ציווי</Text>
-                        </View>
-                    </View>
-                    <View style={{flex: 1}}>
-                        <View style={{flex: 1 }} />
-                        <View style={{flex: 2, justifyContent: 'center', alignItems: 'center'}}>
-                            <Text>פועל</Text>
-                        </View>
-                        <View style={{flex: 1 }} />
-                    </View>
-                </View>
-                {/*<View style={{flex: 1 }} />*/}
-            </View>
-        )
-    },
-});
-
-var DragAndDropMenu = React.createClass({
     _panResponder: {},
 
     getInitialState: function() {
         return {
-            activeSubmenu: null,
-            activeMenuItem: null,
+            highlightedItem: null,
             dragging: false,
             pan: new Animated.ValueXY()
         };
@@ -137,10 +39,131 @@ var DragAndDropMenu = React.createClass({
          this._currentPan = value;
       });
 
-      this._childLayouts = [];
-      this._itemLayouts = [];
+      this._itemLayouts = {};
+      this._displayedScreen = "/";
     },
 
+    render: function() {
+        var menuView;
+        if (this._displayedScreen == "/") {
+            menuView = <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'pink'}}>
+                <View style={{flex: 1}} />
+                <View style={{flex: 2, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                    <Text name="/future" onLayout={this._onItemLayout.bind(this, "/future")}>הווה/עתיד</Text>
+                    <Text name="/past" onLayout={this._onItemLayout.bind(this, "/past")}>עבר</Text>
+                </View>
+                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                    <Text name="/imperative" onLayout={this._onItemLayout.bind(this, "/imperative")}>ציווי</Text>
+                </View>
+            </View>;
+        } else if (this._displayedScreen == "/past") {
+            menuView = <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'green', flexDirection: 'row'}}>
+                <View style={{flex: 1}}>
+                    <Text></Text>
+                </View>
+                <View style={{flex: 1, justifyContent: 'space-between', alignItems: 'center'}}>
+                    <Text>גוף</Text>
+                    <Text name="/past/1" onLayout={this._onItemLayout.bind(this, "/past/1")}>1</Text>
+                    <Text name="/past/2" onLayout={this._onItemLayout.bind(this, "/past/2")}>2</Text>
+                    <Text name="/past/3" onLayout={this._onItemLayout.bind(this, "/past/3")}>3</Text>
+                </View>
+                <View style={{flex: 1, alignItems: 'flex-end', justifyContent: 'center'}}>
+                    <Text>עבר</Text>
+                </View>
+            </View>;
+        }
+
+        return (
+            <View style={{flex: 1, justifyContent:'center', borderWidth: 10, borderColor: 'blue'}}>
+                {menuView}
+                <View style={{flex: 1}}>
+                    <View style={{flex: 1 }} />
+                    <View style={{flex: 2, justifyContent: 'center', alignItems: 'center'}}>
+                        <Animated.View
+                            style={[
+                                //styles.circle,
+                                //this.props.style,
+                                this.state.dragging && styles.draggingCircle,
+                                {transform: this.state.pan.getTranslateTransform()}]}
+                            {...this._panResponder.panHandlers}
+                            onLayout={this._onLayout}>
+                            <Text>פועל</Text>
+                        </Animated.View>
+                    </View>
+                    <View style={{flex: 1 }} />
+                </View>
+            </View>
+        )
+    },
+
+    _onLayout: function(position) {
+        this._layout = position.nativeEvent.layout;
+    },
+
+    _onItemLayout: function(path, position) {
+        this._itemLayouts[path] = position.nativeEvent.layout;
+    },
+
+    _handlePanResponderGrant: function() {
+        this.setState({dragging: true});
+    },
+
+    _handlePanResponderMove: function(e: Object, gestureState: Object) {
+        this.state.pan.setValue({x: gestureState.dx, y: gestureState.dy});
+        this._highlightOverlappingCircle();
+    },
+
+    _handlePanResponderEnd: function(e: Object, gestureState: Object) {
+        this._displayedScreen = "/";
+        this.setState({dragging: false, highlightedItem: null});
+        this.state.pan.setValue({x: 0, y: 0});
+    },
+
+    _highlightOverlappingCircle: function() {
+        var hoveredItem = null;
+        for (var path of this._getChildren(this._displayedScreen)) {
+            if (this._hitTest(this._itemLayouts[path])) {
+                hoveredItem = path;
+                this._displayedScreen = hoveredItem;
+                break;
+            }
+        }
+
+        this.setState({highlightedItem: hoveredItem});
+    },
+
+    _getChildren: function(path) {
+        if (path == "/") {
+            return ["/future", "/past", "/imperative"];
+        } else if (path == "/past") {
+            return ["/past/1", "/past/2", "/past/3"];
+        } else if (path == "/past/1") {
+            return ["/past/1/i", "/past/2/we"];
+        } else {
+            return [];
+        }
+    },
+
+    _hitTest: function(layout) {
+        var mainItemPosition = {
+            x: this._currentPan.x + this._layout.x,
+            y: this._currentPan.y + this._layout.y,
+        };
+        var horizontalOverlapping =
+            (mainItemPosition.x + this._layout.width >= layout.x) &&
+            (mainItemPosition.x <= layout.x + layout.width);
+
+        var verticalOverlapping =
+            (mainItemPosition.y + this._layout.height >= layout.y) &&
+            (mainItemPosition.y <= layout.y + layout.height);
+
+        return horizontalOverlapping && verticalOverlapping;
+    },
+
+});
+
+
+var DragAndDropMenu = React.createClass({
     render: function() {
         var children = null;
         if (this.state.activeSubmenu != null) {
@@ -353,3 +376,71 @@ var styles = StyleSheet.create({
 });
 
 module.exports = VerbGameScreen;
+
+
+var menuItems = [
+    {
+        title: "עבר",
+        children: [
+            {
+                title: "1",
+                children: [
+                    {title: "אני (/אתה)"},
+                    {title: "אנחנו"}
+                ]
+            },
+            {
+                title: "2",
+                children: [
+                    {title: "אתה (או אני)"},
+                    {title: "את"},
+                    {title: "אתם/אתן"}
+                ]
+            },
+            {
+                title: "3",
+                children: [
+                    {title: "הוא"},
+                    {title: "היא"},
+                    {title: "הם/הן"}
+                ]
+            },
+        ]
+    },
+    {
+        title: "הווה/עתיד",
+        children: [
+            {
+                title: "1",
+                children: [
+                    {title: "אני"},
+                    {title: "אנחנו"}
+                ]
+            },
+            {
+                title: "2",
+                children: [
+                    {title: "אתה (או היא)"},
+                    {title: "את"},
+                    {title: "אתם/אתן"}
+                ]
+            },
+            {
+                title: "3",
+                children: [
+                    {title: "הוא"},
+                    {title: "היא (או אתה)"},
+                    {title: "הם/הן"}
+                ]
+            },
+        ]
+    },
+    {
+        title: "ציווי",
+        children: [
+            {title: "אתה"},
+            {title: "את"},
+            {title: "אתם/אתן"}
+        ]
+    }
+];

@@ -18,7 +18,7 @@ var VerbGameScreen = React.createClass({
 
     getInitialState: function() {
         return {
-            highlightedItem: null,
+            displayedScreen: "/",
             dragging: false,
             pan: new Animated.ValueXY()
         };
@@ -40,32 +40,40 @@ var VerbGameScreen = React.createClass({
       });
 
       this._itemLayouts = {};
-      this._displayedScreen = "/";
+      this._refs = {};
     },
 
     render: function() {
         var menuView;
-        if (this._displayedScreen == "/") {
+        if (this.state.displayedScreen == "/") {
             menuView = <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'pink'}}>
                 <View style={{flex: 1}} />
                 <View style={{flex: 2, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                    <Text name="/future" onLayout={this._onItemLayout.bind(this, "/future")}>הווה/עתיד</Text>
-                    <Text name="/past" onLayout={this._onItemLayout.bind(this, "/past")}>עבר</Text>
+                    <Text name="/future" key="/future" onLayout={this._onItemLayout.bind(this, "/future")} ref={this._saveRef}>הווה/עתיד</Text>
+                    <Text name="/past" key="/past" onLayout={this._onItemLayout.bind(this, "/past")} ref={this._saveRef}>עבר</Text>
                 </View>
                 <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                    <Text name="/imperative" onLayout={this._onItemLayout.bind(this, "/imperative")}>ציווי</Text>
+                    <Text name="/imperative" key="/imperative" onLayout={this._onItemLayout.bind(this, "/imperative")} ref={this._saveRef}>ציווי</Text>
                 </View>
             </View>;
-        } else if (this._displayedScreen == "/past") {
+        } else if (this.state.displayedScreen.startsWith("/past")) {
+            var subItems = null;
+            if (this.state.displayedScreen == "/past/1") {
+                subItems = [
+                    <Text name="/past/1/i" key="/past/1/i" onLayout={this._onItemLayout.bind(this, "/past/1/i")} ref={this._saveRef}>אני</Text>,
+                    <Text name="/past/1/we" key="/past/1/we" onLayout={this._onItemLayout.bind(this, "/past/1/we")} ref={this._saveRef}>אנחנו</Text>
+                ];
+            } else if (this.state.displayedScreen == "/past/2") {
+            }
             menuView = <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'green', flexDirection: 'row'}}>
                 <View style={{flex: 1}}>
-                    <Text></Text>
+                    {subItems}
                 </View>
                 <View style={{flex: 1, justifyContent: 'space-between', alignItems: 'center'}}>
                     <Text>גוף</Text>
-                    <Text name="/past/1" onLayout={this._onItemLayout.bind(this, "/past/1")}>1</Text>
-                    <Text name="/past/2" onLayout={this._onItemLayout.bind(this, "/past/2")}>2</Text>
-                    <Text name="/past/3" onLayout={this._onItemLayout.bind(this, "/past/3")}>3</Text>
+                    <Text name="/past/1" key="/past/1" onLayout={this._onItemLayout.bind(this, "/past/1")} ref={this._saveRef}>1</Text>
+                    <Text name="/past/2" key="/past/2" onLayout={this._onItemLayout.bind(this, "/past/2")} ref={this._saveRef}>2</Text>
+                    <Text name="/past/3" key="/past/3" onLayout={this._onItemLayout.bind(this, "/past/3")} ref={this._saveRef}>3</Text>
                 </View>
                 <View style={{flex: 1, alignItems: 'flex-end', justifyContent: 'center'}}>
                     <Text>עבר</Text>
@@ -85,9 +93,13 @@ var VerbGameScreen = React.createClass({
                                 //this.props.style,
                                 this.state.dragging && styles.draggingCircle,
                                 {transform: this.state.pan.getTranslateTransform()}]}
-                            {...this._panResponder.panHandlers}
-                            onLayout={this._onLayout}>
-                            <Text>פועל</Text>
+                            {...this._panResponder.panHandlers}>
+                            <Text
+                                ref={this._saveRef}
+                                name="draggable" key="draggable"
+                                onLayout={this._onItemLayout.bind(this, "draggable")}>
+                                פועל
+                            </Text>
                         </Animated.View>
                     </View>
                     <View style={{flex: 1 }} />
@@ -96,12 +108,30 @@ var VerbGameScreen = React.createClass({
         )
     },
 
-    _onLayout: function(position) {
-        this._layout = position.nativeEvent.layout;
+    _saveRef: function(ref) {
+        if (ref == null) {
+            console.log("Got null ref");
+            return;
+        }
+        if (!ref.props.name) {
+            console.log("Got ref without key");
+            return;
+        }
+        console.log("Saving ref:", ref.props.name);
+        this._refs[ref.props.name] = ref;
     },
 
     _onItemLayout: function(path, position) {
-        this._itemLayouts[path] = position.nativeEvent.layout;
+        if (!this._refs[path]) {
+            console.log("No ref:", path);
+            return;
+        }
+        if (this._itemLayouts[path]) {
+            console.log("Layout already saved:", path);
+            return;
+        }
+        //this._itemLayouts[path] = position.nativeEvent.layout;
+        this._refs[path].measure((x, y, width, height, pageX, pageY) => { this._itemLayouts[path] = {x, y, width, height, pageX, pageY}; });
     },
 
     _handlePanResponderGrant: function() {
@@ -114,22 +144,25 @@ var VerbGameScreen = React.createClass({
     },
 
     _handlePanResponderEnd: function(e: Object, gestureState: Object) {
-        this._displayedScreen = "/";
-        this.setState({dragging: false, highlightedItem: null});
+        this.setState({dragging: false, displayedScreen: "/"});
         this.state.pan.setValue({x: 0, y: 0});
     },
 
     _highlightOverlappingCircle: function() {
         var hoveredItem = null;
-        for (var path of this._getChildren(this._displayedScreen)) {
-            if (this._hitTest(this._itemLayouts[path])) {
-                hoveredItem = path;
-                this._displayedScreen = hoveredItem;
+        console.log("children:", this._getChildren(this.state.displayedScreen));
+        console.log("refs:", Object.keys(this._refs));
+        for (var path of this._getChildren(this.state.displayedScreen)) {
+            if (this._hitTest(path)) {
+                //hoveredItem = path;
+                //this._displayedScreen = hoveredItem;
+                console.log("Found");
+                this.setState({displayedScreen: path});
                 break;
             }
         }
-
-        this.setState({highlightedItem: hoveredItem});
+        //console.log("highlightedItem:", hoveredItem);
+        //this.setState({highlightedItem: hoveredItem});
     },
 
     _getChildren: function(path) {
@@ -144,19 +177,43 @@ var VerbGameScreen = React.createClass({
         }
     },
 
-    _hitTest: function(layout) {
+    _hitTest: function(path) {
+        var layout = this._itemLayouts[path];
+        if (!layout) {
+            // Not loaded yet.
+            console.log("Not loaded:", path);
+            return false;
+        }
+
+        // var mainItemPosition = {
+        //     x: this._currentPan.x + this._layout.pageX,
+        //     y: this._currentPan.y + this._layout.pageY,
+        // };
+        var mainLayout = this._itemLayouts["draggable"];
+        if (!mainLayout) {
+            console.log("No main item position");
+            return false;
+        }
         var mainItemPosition = {
-            x: this._currentPan.x + this._layout.x,
-            y: this._currentPan.y + this._layout.y,
-        };
+            pageX: mainLayout.pageX + this._currentPan.x,
+            pageY: mainLayout.pageY + this._currentPan.y,
+            width: mainLayout.width,
+            height: mainLayout.height
+        }
+
         var horizontalOverlapping =
-            (mainItemPosition.x + this._layout.width >= layout.x) &&
-            (mainItemPosition.x <= layout.x + layout.width);
+            (mainItemPosition.pageX + mainItemPosition.width >= layout.pageX) &&
+            (mainItemPosition.pageX <= layout.pageX + layout.width);
 
         var verticalOverlapping =
-            (mainItemPosition.y + this._layout.height >= layout.y) &&
-            (mainItemPosition.y <= layout.y + layout.height);
+            (mainItemPosition.pageY + mainItemPosition.height >= layout.pageY) &&
+            (mainItemPosition.pageY <= layout.pageY + layout.height);
 
+        if (path == "/imperative") {
+            console.log("Hori:", horizontalOverlapping, "Ver:", verticalOverlapping);
+            console.log("Main:", mainItemPosition.pageX, mainItemPosition.pageY);
+            console.log("/imperative:", layout.pageX, layout.pageY);
+        }
         return horizontalOverlapping && verticalOverlapping;
     },
 

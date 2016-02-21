@@ -174,10 +174,16 @@ var VerbGameScreen = React.createClass({
 
     _highlightOverlappingCircle: function() {
         var hoveredItem = null;
-        console.log("children:", this._getMenuItem(this.state.displayedScreen).children);
+        //console.log("children:", this._getMenuItem(this.state.displayedScreen).children);
         console.log("refs:", Object.keys(this._refs));
         var hoveredItem = null;
-        for (var path in this._getChildren(this.state.displayedScreen)) {
+        var hitCandidates = this._getChildren(this.state.displayedScreen);
+        var treeLevel = this.state.displayedScreen.match(/\//g).length;
+        if (treeLevel == 2) {
+            Object.assign(hitCandidates, this._getSiblings(this.state.displayedScreen));
+        }
+        console.log("hit candidates:", Object.keys(hitCandidates));
+        for (var path in hitCandidates) {
             if (this._hitTest(path)) {
                 console.log("Found");
                 hoveredItem = path;
@@ -195,6 +201,15 @@ var VerbGameScreen = React.createClass({
     _getChildren: function(path) {
         var pathPrefix = path == "/" ? "/" : path + "/";
         return _.mapKeys(this._getMenuItem(path).children, (child, key) => pathPrefix + key);
+    },
+
+    _getSiblings: function(path) {
+        var parentsChildren = this._getChildren(this._getParent(path));
+        return _.omit(parentsChildren, path);
+    },
+
+    _getParent: function(path) {
+        return path.substring(0, path.lastIndexOf("/"));
     },
 
     _getMenuItem: function(path) {

@@ -1,6 +1,7 @@
 'use strict';
 
 var _ = require('lodash');
+var TimerMixin = require('react-timer-mixin');
 var React = require('react-native');
 var {
     Animated,
@@ -16,11 +17,13 @@ var CIRCLE_SIZE = 80;
 
 var VerbGameScreen = React.createClass({
     _panResponder: {},
+    mixins: [TimerMixin],
 
     getInitialState: function() {
         return {
             displayedScreen: "/",
             dragging: false,
+            dropped: false,
             pan: new Animated.ValueXY()
         };
     },
@@ -45,6 +48,10 @@ var VerbGameScreen = React.createClass({
     },
 
     render: function() {
+        if (this.state.dropped) {
+            return this.renderDroppedView();
+        }
+
         var menuView;
         if (this.state.displayedScreen == "/") {
             menuView = this.renderMainView();
@@ -75,6 +82,14 @@ var VerbGameScreen = React.createClass({
                 </View>
             </View>
         )
+    },
+
+    renderDroppedView: function() {
+        return (
+            <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                <Text>dropped</Text>
+            </View>
+        );
     },
 
     renderMainView: function() {
@@ -169,7 +184,15 @@ var VerbGameScreen = React.createClass({
     },
 
     _handlePanResponderEnd: function(e: Object, gestureState: Object) {
-        this.setState({dragging: false, displayedScreen: "/"});
+        if (this.state.highlightedItem) {
+            this.setState(
+                {dragging: false, displayedScreen: "/", dropped: true},
+                () => {
+                    this.setTimeout(() => { this.setState({dropped: false}) }, 2000);
+                });
+        } else {
+            this.setState({dragging: false, displayedScreen: "/"});
+        }
         this.state.pan.setValue({x: 0, y: 0});
     },
 

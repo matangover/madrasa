@@ -128,7 +128,8 @@ var VerbGameScreen = React.createClass({
             name={path}
             key={path}
             onLayout={this._onItemLayout.bind(this, path)}
-            ref={this._saveRef}>
+            ref={this._saveRef}
+            style={this.state.highlightedItem == path && {backgroundColor: 'blue'}}>
             {item.title}
         </Text>;
     },
@@ -175,7 +176,7 @@ var VerbGameScreen = React.createClass({
     _highlightOverlappingCircle: function() {
         var hoveredItem = null;
         //console.log("children:", this._getMenuItem(this.state.displayedScreen).children);
-        console.log("refs:", Object.keys(this._refs));
+        // console.log("refs:", Object.keys(this._refs));
         var hoveredItem = null;
         var hitCandidates = this._getChildren(this.state.displayedScreen);
         var treeLevel = this.state.displayedScreen.match(/\//g).length;
@@ -191,11 +192,15 @@ var VerbGameScreen = React.createClass({
             }
         }
 
-        var newState = {highlightedItem: hoveredItem};
-        if (hoveredItem && !this._isDropTarget(hoveredItem)) {
-            newState.displayedScreen = path;
+        if (hoveredItem) {
+            if (this._isDropTarget(hoveredItem)) {
+                this.setState({highlightedItem: hoveredItem});
+            } else {
+                this.setState({displayedScreen: hoveredItem});
+            }
+        } else {
+            this.setState({highlightedItem: null});
         }
-        this.setState(newState);
     },
 
     _getChildren: function(path) {
@@ -258,11 +263,11 @@ var VerbGameScreen = React.createClass({
             (mainItemPosition.pageY + mainItemPosition.height >= layout.pageY) &&
             (mainItemPosition.pageY <= layout.pageY + layout.height);
 
-        if (path == "/imperative") {
-            console.log("Hori:", horizontalOverlapping, "Ver:", verticalOverlapping);
-            console.log("Main:", mainItemPosition.pageX, mainItemPosition.pageY);
-            console.log("/imperative:", layout.pageX, layout.pageY);
-        }
+        // if (path == "/imperative") {
+        //     console.log("Hori:", horizontalOverlapping, "Ver:", verticalOverlapping);
+        //     console.log("Main:", mainItemPosition.pageX, mainItemPosition.pageY);
+        //     console.log("/imperative:", layout.pageX, layout.pageY);
+        // }
         return horizontalOverlapping && verticalOverlapping;
     },
 

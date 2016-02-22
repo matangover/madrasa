@@ -57,6 +57,10 @@ var VerbGameScreen = React.createClass({
             menuView = this.renderMainView();
         } else if (this.state.displayedScreen.startsWith("/past")) {
             menuView = this.renderPastView();
+        } else if (this.state.displayedScreen.startsWith("/future")) {
+            menuView = this.renderFutureView();
+        } else if (this.state.displayedScreen == "/imperative") {
+            menuView = this.renderImperativeView();
         }
 
         return (
@@ -125,6 +129,42 @@ var VerbGameScreen = React.createClass({
         </View>;
 
         return menuView;
+    },
+
+    renderFutureView: function() {
+        var subItems = null;
+        if (this.state.displayedScreen.startsWith("/future/")) {
+            subItems = this.renderTextElementsForChildren(this.state.displayedScreen);
+        }
+
+        var menuView = <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'green', flexDirection: 'row'}}>
+            <View style={{flex: 1, alignItems: 'flex-start', justifyContent: 'center'}}>
+                <Text>הווה/עתיד</Text>
+            </View>
+            <View style={{flex: 1, justifyContent: 'space-between', alignItems: 'center'}}>
+                <Text>גוף</Text>
+                {this.renderTextElementsForChildren("/future")}
+            </View>
+            <View style={{flex: 1, alignItems: 'flex-end', justifyContent: 'center'}}>
+                {subItems}
+            </View>
+        </View>;
+
+        return menuView;
+    },
+
+    renderImperativeView: function() {
+        return (
+            <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'brown'}}>
+                <View style={{flex: 1}} />
+                <View style={{flex: 2, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                    {this.renderTextElementsForChildren("/imperative")}
+                </View>
+                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                    {this.renderTextElement("/imperative")}
+                </View>
+            </View>
+        );
     },
 
     renderTextElementsForChildren: function(path) {

@@ -67,26 +67,32 @@ var VerbGameScreen = React.createClass({
             menuView = this.renderImperativeView();
         }
 
+        var circleColor = this.state.displayedScreen == "/" ? "red" : "transparent";
+
         return (
             <View style={{flex: 1, justifyContent:'center', borderWidth: 10, borderColor: 'blue'}}>
-                {menuView}
-                <View style={{flex: 1}}>
-                    <View style={{flex: 1 }} />
-                    <View style={{flex: 2, justifyContent: 'center', alignItems: 'center'}}>
-                        <Animated.View
-                            style={[
-                                this.state.dragging && styles.draggingCircle,
-                                {transform: this.state.pan.getTranslateTransform()}]}
-                            {...this._panResponder.panHandlers}>
-                            <Text
-                                ref={this._saveRef}
-                                name="draggable" key="draggable"
-                                onLayout={this._onItemLayout.bind(this, "draggable")}>
-                                פועל
-                            </Text>
-                        </Animated.View>
+                <View style={{height: 400, marginHorizontal: 20}}>
+                    {menuView}
+                    <View style={{flex: 1}}>
+                        <View style={{flex: 1 }} />
+                        <View style={{flex: 2, justifyContent: 'center', alignItems: 'center'}}>
+                            <View style={{backgroundColor: circleColor, borderRadius: 40, width: 80, height: 80, justifyContent: 'center', alignItems: 'center'}}>
+                                <Animated.View
+                                    style={[
+                                        this.state.dragging && styles.draggingCircle,
+                                        {transform: this.state.pan.getTranslateTransform()}]}
+                                    {...this._panResponder.panHandlers}>
+                                        <Text
+                                            ref={this._saveRef}
+                                            name="draggable" key="draggable"
+                                            onLayout={this._onItemLayout.bind(this, "draggable")}>
+                                            פועל
+                                        </Text>
+                                </Animated.View>
+                            </View>
+                        </View>
+                        <View style={{flex: 1 }} />
                     </View>
-                    <View style={{flex: 1 }} />
                 </View>
             </View>
         )
@@ -121,9 +127,12 @@ var VerbGameScreen = React.createClass({
 
         var menuView = <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'green', flexDirection: 'row'}}>
             <View style={{flex: 1}}>
-                {subItems}
+                <View style={{flex: 1}} />
+                <View style={{flex: 3, justifyContent: 'space-around', alignItems: 'center'}}>
+                    {subItems}
+                </View>
             </View>
-            <View style={{flex: 1, justifyContent: 'space-between', alignItems: 'center'}}>
+            <View style={{flex: 1, justifyContent: 'space-between', alignItems: 'center', marginVertical: 40}}>
                 <Text>גוף</Text>
                 {this.renderTextElementsForChildren("/past")}
             </View>
@@ -145,12 +154,15 @@ var VerbGameScreen = React.createClass({
             <View style={{flex: 1, alignItems: 'flex-start', justifyContent: 'center'}}>
                 <Text>הווה/עתיד</Text>
             </View>
-            <View style={{flex: 1, justifyContent: 'space-between', alignItems: 'center'}}>
+            <View style={{flex: 1, justifyContent: 'space-between', alignItems: 'center', marginVertical: 40}}>
                 <Text>גוף</Text>
                 {this.renderTextElementsForChildren("/future")}
             </View>
-            <View style={{flex: 1, alignItems: 'flex-end', justifyContent: 'center'}}>
-                {subItems}
+            <View style={{flex: 1}}>
+                <View style={{flex: 1}} />
+                <View style={{flex: 3, justifyContent: 'space-around', alignItems: 'center'}}>
+                    {subItems}
+                </View>
             </View>
         </View>;
 
@@ -162,7 +174,7 @@ var VerbGameScreen = React.createClass({
             <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'brown'}}>
                 <View style={{flex: 1}} />
                 <View style={{flex: 2, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                    {this.renderTextElementsForChildren("/imperative")}
+                    {this.renderTextElementsForChildren("/imperative").reverse()}
                 </View>
                 <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                     {this.renderTextElement("/imperative")}

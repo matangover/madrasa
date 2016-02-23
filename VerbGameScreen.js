@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 var TimerMixin = require('react-timer-mixin');
+var Subscribable = require('Subscribable');
 var React = require('react-native');
 var {
     Animated,
@@ -17,7 +18,7 @@ var CIRCLE_SIZE = 80;
 
 var VerbGameScreen = React.createClass({
     _panResponder: {},
-    mixins: [TimerMixin],
+    mixins: [Subscribable.Mixin, TimerMixin],
 
     getInitialState: function() {
         return {
@@ -45,6 +46,9 @@ var VerbGameScreen = React.createClass({
 
       this._itemLayouts = {};
       this._refs = {};
+
+      this.addListenerOn(this.props.navigator.navigationContext, 'didfocus', this._didFocus);
+      //this.props.navigator.navigationContext.addListener('didfocus', this._didFocus);
     },
 
     render: function() {
@@ -189,6 +193,14 @@ var VerbGameScreen = React.createClass({
         </Text>;
     },
 
+    _didFocus: function(event) {
+        if (event.target.currentRoute.name == 'verb_game') {
+            console.log("didfocus");
+            this._saveItemLayout("draggable");
+            _.map(this._getChildren("/"), (child, key) => this._saveItemLayout(key));
+        }
+    },
+
     _saveRef: function(ref) {
         if (ref == null) {
             console.log("Got null ref");
@@ -203,15 +215,35 @@ var VerbGameScreen = React.createClass({
     },
 
     _onItemLayout: function(path, position) {
-        if (!this._refs[path]) {
-            console.log("No ref:", path);
-            return;
-        }
         if (this._itemLayouts[path]) {
             console.log("Layout already saved:", path);
             return;
         }
-        this._refs[path].measure((x, y, width, height, pageX, pageY) => { this._itemLayouts[path] = {x, y, width, height, pageX, pageY}; });
+        this._saveItemLayout(path);
+    },
+
+    _saveItemLayout: function(path) {
+        if (!this._refs[path]) {
+            console.log("No ref:", path);
+            return;
+        }
+        //if (path == "draggable") {
+        //    console.log("Position:", position.nativeEvent);
+        //}
+        // if (this._itemLayouts[path]) {
+        //     console.log("Layout already saved:", path);
+        //     return;
+        // }
+        this._refs[path].measure(
+            (x, y, width, height, pageX, pageY) => {
+                // var prev = this._itemLayouts[path];
+                // if (prev) {
+                //     console.log(path, "Prev:", prev.pageX, prev.pageY, "Curr:", pageX, pageY);
+                // }
+                this._itemLayouts[path] = {x, y, width, height, pageX, pageY};
+            }
+        );
+        //if (path=="draggable") console.log("Measured Position:", x, y, width, height, pageX, pageY);});
     },
 
     _handlePanResponderGrant: function() {

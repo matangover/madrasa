@@ -67,7 +67,7 @@ var VerbGameScreen = React.createClass({
             menuView = this.renderImperativeView();
         }
 
-        var circleColor = this.state.displayedScreen == "/" ? "red" : "transparent";
+        var circleColor = this.state.displayedScreen == "/" ? "rgb(174, 200, 245)" : "transparent";
 
         return (
             <View style={{flex: 1, justifyContent:'center', borderWidth: 10, borderColor: 'blue'}}>
@@ -83,6 +83,7 @@ var VerbGameScreen = React.createClass({
                                         {transform: this.state.pan.getTranslateTransform()}]}
                                     {...this._panResponder.panHandlers}>
                                         <Text
+                                            style={{color: 'rgb(41, 108, 182)', fontSize: 30, fontWeight: 'bold', fontFamily: 'Palatino'}}
                                             ref={this._saveRef}
                                             name="draggable" key="draggable"
                                             onLayout={this._onItemLayout.bind(this, "draggable")}>
@@ -110,11 +111,11 @@ var VerbGameScreen = React.createClass({
         return <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'pink'}}>
             <View style={{flex: 1}} />
             <View style={{flex: 2, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                {this.renderTextElement("/future")}
-                {this.renderTextElement("/past")}
+                {this.renderTextElement("/future", null, null, styles.menuItemLevel1)}
+                {this.renderTextElement("/past", null, null, styles.menuItemLevel1)}
             </View>
             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                {this.renderTextElement("/imperative")}
+                {this.renderTextElement("/imperative", null, null, styles.menuItemLevel1)}
             </View>
         </View>;
     },
@@ -122,22 +123,22 @@ var VerbGameScreen = React.createClass({
     renderPastView: function() {
         var subItems = null;
         if (this.state.displayedScreen.startsWith("/past/")) {
-            subItems = this.renderTextElementsForChildren(this.state.displayedScreen);
+            subItems = this.renderTextElementsForChildren(this.state.displayedScreen, null, styles.menuItemLevel3);
         }
 
         var menuView = <View style={{position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, borderWidth: 10, borderColor: 'green', flexDirection: 'row'}}>
-            <View style={{flex: 1}}>
+            <View style={{flex: 1, marginVertical: 40}}>
                 <View style={{flex: 1}} />
                 <View style={{flex: 3, justifyContent: 'space-around', alignItems: 'center'}}>
                     {subItems}
                 </View>
             </View>
-            <View style={{flex: 1, justifyContent: 'space-between', alignItems: 'center', marginVertical: 40}}>
-                <Text>גוף</Text>
-                {this.renderTextElementsForChildren("/past")}
+            <View style={{flex: 1, justifyContent: 'space-between', alignItems: 'center', marginVertical: 40, marginHorizontal: 40, backgroundColor: '#e2dcda', borderRadius: 10, paddingVertical: 10}}>
+                <Text style={styles.menuTitleLevel2}>גוף</Text>
+                {this.renderTextElementsForChildren("/past", styles.menuItemLevel2Container, styles.menuItemLevel2Text)}
             </View>
             <View style={{flex: 1, alignItems: 'flex-end', justifyContent: 'center'}}>
-                <Text>עבר</Text>
+                <Text style={styles.menuItemLevel1}>עבר</Text>
             </View>
         </View>;
 
@@ -155,7 +156,7 @@ var VerbGameScreen = React.createClass({
                 <Text>הווה/עתיד</Text>
             </View>
             <View style={{flex: 1, justifyContent: 'space-between', alignItems: 'center', marginVertical: 40}}>
-                <Text>גוף</Text>
+                <Text style={styles.menuTitleLevel2}>גוף</Text>
                 {this.renderTextElementsForChildren("/future")}
             </View>
             <View style={{flex: 1}}>
@@ -183,26 +184,37 @@ var VerbGameScreen = React.createClass({
         );
     },
 
-    renderTextElementsForChildren: function(path) {
-        return _.map(
+    renderTextElementsForChildren: function(path, containerStyle, textStyle) {
+        var textElements = _.map(
             this._getChildren(path),
-            (child, childPath) => this.renderTextElement(childPath, child)
+            (child, childPath) => this.renderTextElement(childPath, child, containerStyle, textStyle)
         );
+        if (textElements.length == 2) {
+            textElements.push(<Text key="spacer" />);
+        }
+        return textElements;
     },
 
-    renderTextElement: function(path, item) {
+    renderTextElement: function(path, item, containerStyle, textStyle) {
         if (!item) {
             item = this._getMenuItem(path);
         }
 
-        return <Text
-            name={path}
-            key={path}
-            onLayout={this._onItemLayout.bind(this, path)}
-            ref={this._saveRef}
-            style={this.state.highlightedItem == path && {backgroundColor: 'blue'}}>
-            {item.title}
-        </Text>;
+        return (
+            <View style={containerStyle} key={path + ":container"}>
+                <Text
+                    name={path}
+                    key={path}
+                    onLayout={this._onItemLayout.bind(this, path)}
+                    ref={this._saveRef}
+                    style={[
+                        this.state.highlightedItem == path && {backgroundColor: 'blue'},
+                        textStyle
+                    ]}>
+                    {item.title}
+                </Text>
+            </View>
+        );
     },
 
     _didFocus: function(event) {
@@ -434,6 +446,37 @@ var styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+
+    menuItemLevel1: {
+        fontFamily: 'Palatino',
+        fontSize: 24,
+        color: 'rgb(13, 64, 120)'
+    },
+    menuTitleLevel2: {
+        fontFamily: 'Palatino',
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: 'rgb(60, 30, 5)'
+    },
+    menuItemLevel2Container: {
+        borderRadius: 10,
+        backgroundColor: '#c0b3af',
+        width: 30,
+        height: 30,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    menuItemLevel2Text: {
+        fontFamily: 'Palatino',
+        fontSize: 20,
+        color: 'rgb(60, 30, 5)'
+    },
+    menuItemLevel3: {
+        fontFamily: 'Palatino',
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: 'rgb(60, 30, 5)'
+    }
 });
 
 module.exports = VerbGameScreen;
@@ -453,7 +496,7 @@ var menuItems = {
                 "2": {
                     title: "2",
                     children: {
-                        "masculine": {title: "אתה (או אני)"},
+                        "masculine": {title: "אתה (/אני)"},
                         "feminine": {title: "את"},
                         "plural": {title: "אתם/אתן"}
                     }

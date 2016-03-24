@@ -47,6 +47,10 @@ var Madrasa = React.createClass({
                   style={styles.navigator}
                   initialRoute={initialRoute}
                   renderScene={renderScene}
+                  configureScene={(route) => ({
+                      ...Navigator.SceneConfigs.HorizontalSwipeJumpFromRight,
+                      gestures: false
+                  })}
                 />
         );
     }

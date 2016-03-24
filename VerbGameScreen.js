@@ -10,6 +10,7 @@ var {
     StyleSheet,
     Text,
     TouchableHighlight,
+    TouchableOpacity,
     View,
     processColor
 } = React;
@@ -25,7 +26,9 @@ var VerbGameScreen = React.createClass({
             displayedScreen: "/",
             dragging: false,
             dropped: false,
-            pan: new Animated.ValueXY()
+            pan: new Animated.ValueXY(),
+            correctAnswers: 0,
+            totalAnswers: 0
         };
     },
 
@@ -52,10 +55,32 @@ var VerbGameScreen = React.createClass({
     },
 
     render: function() {
+        var mainView;
         if (this.state.dropped) {
-            return this.renderDroppedView();
+            mainView = this.renderDroppedView();
+        } else {
+            mainView = this.renderGameView();
         }
 
+        return (
+            <View style={styles.mainContainer}>
+                <View style={styles.topBar}>
+                    <Text style={styles.scoreText}>
+                        ניקוד: {this.state.correctAnswers} מתוך {this.state.totalAnswers}
+                    </Text>
+                    <TouchableOpacity
+                        onPress={() => this.props.navigator.pop()}
+                        style={styles.backButton}>
+                        <Text>&lt; חזרה</Text>
+                    </TouchableOpacity>
+                </View>
+                {mainView}
+            </View>
+        )
+    },
+
+    renderGameView: function() {
+        var circleColor = this.state.displayedScreen == "/" ? "rgb(174, 200, 245)" : "transparent";
         var menuView;
         if (this.state.displayedScreen == "/") {
             menuView = this.renderMainView();
@@ -66,37 +91,32 @@ var VerbGameScreen = React.createClass({
         } else if (this.state.displayedScreen == "/imperative") {
             menuView = this.renderImperativeView();
         }
-
-        var circleColor = this.state.displayedScreen == "/" ? "rgb(174, 200, 245)" : "transparent";
-
-        return (
-            <View style={styles.gameContainer}>
-                <View style={{height: 400, marginHorizontal: 20}}>
-                    {menuView}
-                    <View style={{flex: 1, backgroundColor: 'transparent'}}>
-                        <View style={{flex: 1 }} />
-                        <View style={{flex: 2, justifyContent: 'center', alignItems: 'center'}}>
-                            <View style={{backgroundColor: circleColor, borderRadius: 40, width: 80, height: 80, justifyContent: 'center', alignItems: 'center'}}>
-                                <Animated.View
-                                    style={[
-                                        this.state.dragging && styles.draggingCircle,
-                                        {transform: this.state.pan.getTranslateTransform()}]}
-                                    {...this._panResponder.panHandlers}>
-                                        <Text
-                                            style={{color: 'rgb(41, 108, 182)', fontSize: 30, fontWeight: 'bold', fontFamily: 'Palatino'}}
-                                            ref={this._saveRef}
-                                            name="draggable" key="draggable"
-                                            onLayout={this._onItemLayout.bind(this, "draggable")}>
-                                            פועל
-                                        </Text>
-                                </Animated.View>
-                            </View>
+        return <View style={styles.gameContainer}>
+            <View style={{height: 400, marginHorizontal: 20}}>
+                {menuView}
+                <View style={{flex: 1, backgroundColor: 'transparent'}}>
+                    <View style={{flex: 1 }} />
+                    <View style={{flex: 2, justifyContent: 'center', alignItems: 'center'}}>
+                        <View style={{backgroundColor: circleColor, borderRadius: 40, width: 80, height: 80, justifyContent: 'center', alignItems: 'center'}}>
+                            <Animated.View
+                                style={[
+                                    this.state.dragging && styles.draggingCircle,
+                                    {transform: this.state.pan.getTranslateTransform()}]}
+                                {...this._panResponder.panHandlers}>
+                                    <Text
+                                        style={{color: 'rgb(41, 108, 182)', fontSize: 30, fontWeight: 'bold', fontFamily: 'Palatino'}}
+                                        ref={this._saveRef}
+                                        name="draggable" key="draggable"
+                                        onLayout={this._onItemLayout.bind(this, "draggable")}>
+                                        פועל
+                                    </Text>
+                            </Animated.View>
                         </View>
-                        <View style={{flex: 1 }} />
                     </View>
+                    <View style={{flex: 1 }} />
                 </View>
             </View>
-        )
+        </View>;
     },
 
     renderDroppedView: function() {
@@ -294,7 +314,12 @@ var VerbGameScreen = React.createClass({
             this.setState(
                 {dragging: false, displayedScreen: "/", dropped: true},
                 () => {
-                    this.setTimeout(() => { this.setState({dropped: false}) }, 2000);
+                    this.setTimeout(() => {
+                        this.setState({
+                            dropped: false,
+                            totalAnswers: this.state.totalAnswers + 1
+                        })
+                    }, 2000);
                 });
         } else {
             this.setState({dragging: false, displayedScreen: "/"});
@@ -460,6 +485,30 @@ var styles = StyleSheet.create({
         alignItems: 'center',
     },
 
+    mainContainer: {
+        flex: 1,
+        //justifyContent:'center',
+        //borderWidth: 10,
+        //borderColor: 'blue',
+        //backgroundColor: 'rgb(255, 255, 248)'
+    },
+    topBar: {
+        justifyContent: 'center',
+        paddingTop: 30,
+        backgroundColor: 'rgb(166, 212, 68)',
+        height: 60,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    backButton: {
+        position: 'absolute',
+        right: 5
+        //marginRight: 5,
+        //alignSelf: 'flex-end'
+    },
+    scoreText: {
+        //alignSelf: 'center'
+    },
     gameContainer: {
         flex: 1,
         justifyContent:'center',
